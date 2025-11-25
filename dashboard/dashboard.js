@@ -40,8 +40,12 @@ class RideshareDashboard {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const section = item.dataset.section;
-                this.switchSection(section);
+                // Handle click on child elements (like svg or text) by finding the closest .nav-item
+                const target = e.target.closest('.nav-item');
+                if (target) {
+                    const section = target.dataset.section;
+                    this.switchSection(section);
+                }
             });
         });
         
