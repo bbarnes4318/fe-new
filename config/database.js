@@ -5,9 +5,12 @@ require('dotenv').config();
 // Note: In production, this MUST come from process.env.DATABASE_URL
 const databaseUrl = process.env.DATABASE_URL;
 
+console.log('🔌 Attempting Database Connection...');
+console.log('URL Configured:', databaseUrl ? 'Yes (Hidden)' : 'No');
+
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
-  logging: false, // Set to console.log to see SQL queries
+  logging: console.log, // Enable logging to see what's happening
   dialectOptions: {
     ssl: {
       require: true,
@@ -28,6 +31,7 @@ const testConnection = async () => {
     console.log('✅ Connected to PostgreSQL database successfully.');
   } catch (error) {
     console.error('❌ Unable to connect to the PostgreSQL database:', error);
+    console.error('Error details:', error.message);
   }
 };
 
