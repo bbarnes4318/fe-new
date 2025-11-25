@@ -43,7 +43,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bbarnes4318/rideshare.git"
+    "url": "https://github.com/bbarnes4318/fe-new.git"
   },
   "engines": {
     "node": ">=14.0.0",

@@ -96,13 +96,9 @@ const formHandler = async (req, res) => {
       lname: formData.lname?.trim(),
       email: formData.email?.trim().toLowerCase(),
       phone: formData.phone?.replace(/\D/g, ''), // Remove non-digits
-      address: formData.address?.trim(),
-      city: formData.city?.trim(),
       state: formData.state?.toUpperCase(),
-      zip: formData.zip?.trim(),
-      gender: formData.gender ? formData.gender.charAt(0).toUpperCase() + formData.gender.slice(1).toLowerCase() : 'Other',
-      date_of_birth: parseDate(formData.date_of_birth),
-      diagnosis_year: parseDate(formData.diagnosis_year),
+      age: formData.age,
+      beneficiary: formData.beneficiary,
       
       // Technical data
       ip_address: cleanIP,
@@ -131,7 +127,7 @@ const formHandler = async (req, res) => {
       
       // Trusted form and metadata
       trusted_form_cert_url: formData.xxTrustedFormCertUrl || formData.Trusted_Form_Alt || formData.trusted_form_cert_url || 'https://cert.trustedform.com/pending',
-      case_type: formData.case_type || 'Rideshare',
+      case_type: formData.case_type || 'Final Expense',
       ownerid: formData.ownerid || '005TR00000CDuezYAD',
       campaign: formData.campaign || '',
       offer_url: formData.offer_url || req.headers.referer || '',
@@ -191,13 +187,9 @@ const formHandler = async (req, res) => {
           lname: basicData.lname,
           email: basicData.email,
           phone: basicData.phone,
-          address: basicData.address,
-          city: basicData.city,
           state: basicData.state,
-          zip: basicData.zip,
-          gender: basicData.gender,
-          date_of_birth: new Date(basicData.date_of_birth),
-          diagnosis_year: new Date(basicData.diagnosis_year),
+          age: basicData.age,
+          beneficiary: basicData.beneficiary,
           ip_address: req.ip || '127.0.0.1',
           user_agent: req.headers['user-agent'] || '',
           trusted_form_cert_url: basicData.xxTrustedFormCertUrl || '',

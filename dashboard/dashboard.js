@@ -384,7 +384,6 @@ class RideshareDashboard {
             
             const statusClass = `status-${submission.status}`;
             const date = new Date(submission.submission_date).toLocaleDateString();
-            const location = `${submission.geolocation?.city || 'Unknown'}, ${submission.geolocation?.country || 'Unknown'}`;
             
             const trustedFormBadge = submission.trusted_form_cert_url ? 
                 `<a href="${submission.trusted_form_cert_url}" target="_blank" class="text-green-600 hover:text-green-800 font-semibold">✓ Verified</a>` :
@@ -395,14 +394,19 @@ class RideshareDashboard {
                     <div class="text-sm font-medium text-gray-900">${submission.fname} ${submission.lname}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${submission.email}</div>
                     <div class="text-sm text-gray-500">${submission.phone}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    ${trustedFormBadge}
+                    <div class="text-sm text-gray-900">${submission.state || 'N/A'}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">${location}</div>
+                    <div class="text-sm text-gray-900">${submission.age || 'N/A'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900 capitalize">${submission.beneficiary || 'N/A'}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${trustedFormBadge}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="status-badge ${statusClass}">${submission.status}</span>
@@ -600,26 +604,24 @@ class RideshareDashboard {
                 <div class="mb-6">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">Address</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div><strong>Street:</strong> ${submission.address || 'N/A'}</div>
-                        <div><strong>City:</strong> ${submission.city || 'N/A'}</div>
                         <div><strong>State:</strong> ${submission.state || 'N/A'}</div>
-                        <div><strong>Zip:</strong> ${submission.zip || 'N/A'}</div>
+                        <div><strong>City:</strong> ${submission.geolocation?.city || 'N/A'}</div>
+                        <div><strong>Country:</strong> ${submission.geolocation?.country || 'N/A'}</div>
                     </div>
                 </div>
                 
                 <div class="mb-6">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">Personal Details</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div><strong>Gender:</strong> ${submission.gender || 'N/A'}</div>
-                        <div><strong>Date of Birth:</strong> ${submission.date_of_birth ? new Date(submission.date_of_birth).toLocaleDateString() : 'N/A'}</div>
-                        <div><strong>Date of Incident:</strong> ${submission.diagnosis_year ? new Date(submission.diagnosis_year).toLocaleDateString() : 'N/A'}</div>
+                        <div><strong>Age:</strong> ${submission.age || 'N/A'}</div>
+                        <div><strong>Beneficiary:</strong> ${submission.beneficiary || 'N/A'}</div>
                     </div>
                 </div>
                 
                 <div class="mb-6">
                     <h4 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-1">Case Details</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div><strong>Case Type:</strong> ${submission.case_type || 'Rideshare'}</div>
+                        <div><strong>Case Type:</strong> ${submission.case_type || 'Final Expense'}</div>
                         <div><strong>Status:</strong> <span class="status-badge status-${submission.status}">${submission.status}</span></div>
                         <div><strong>Quality Score:</strong> ${submission.quality_score}/100</div>
                         <div><strong>Submitted:</strong> ${new Date(submission.submission_date).toLocaleString()}</div>
