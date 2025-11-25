@@ -129,17 +129,22 @@ const formHandler = async (req, res) => {
       try {
         const basicData = Array.isArray(req.body) ? req.body[0] : req.body;
         const basicSubmission = new Submission({
-          fname: basicData.fname,
-          lname: basicData.lname,
+          fname: basicData.fname || 'Unknown',
+          lname: basicData.lname || 'Unknown',
           email: basicData.email,
-          phone: basicData.phone,
-          state: basicData.state,
-          age: basicData.age,
-          beneficiary: basicData.beneficiary,
+          phone: basicData.phone || '0000000000',
+          state: basicData.state || 'XX',
+          age: basicData.age || '0',
+          beneficiary: basicData.beneficiary || 'other',
           ip_address: req.ip || '127.0.0.1',
-          user_agent: req.headers['user-agent'] || '',
-          trusted_form_cert_url: basicData.xxTrustedFormCertUrl || '',
-          geolocation: { country: 'Unknown', city: 'Unknown' }
+          user_agent: req.headers['user-agent'] || 'Unknown',
+          trusted_form_cert_url: basicData.xxTrustedFormCertUrl || 'https://cert.trustedform.com/pending',
+          geolocation: { 
+            country: 'Unknown', 
+            city: 'Unknown',
+            region: 'Unknown',
+            zip: '00000'
+          }
         });
         await basicSubmission.save();
         console.log('✅ Basic submission saved despite errors');
