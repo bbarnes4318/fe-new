@@ -58,18 +58,30 @@ const formHandler = async (req, res) => {
     // Create submission object
     const submissionData = {
       // Form fields
-      fname: formData.fname?.trim(),
-      lname: formData.lname?.trim(),
+      fname: formData.fname?.trim() || 'Unknown',
+      lname: formData.lname?.trim() || 'Unknown',
       email: formData.email?.trim().toLowerCase(),
-      phone: formData.phone?.replace(/\D/g, ''), // Remove non-digits
-      state: formData.state?.toUpperCase(),
-      age: formData.age,
-      beneficiary: formData.beneficiary,
+      phone: formData.phone?.replace(/\D/g, '') || '0000000000',
+      state: formData.state?.toUpperCase() || 'XX',
+      age: formData.age || '0',
+      beneficiary: formData.beneficiary || 'other',
       
       // Technical data
-      ip_address: cleanIP,
-      geolocation,
-      user_agent: userAgentString,
+      ip_address: cleanIP || '127.0.0.1',
+      geolocation: {
+        country: geolocation.country || 'Unknown',
+        country_code: geolocation.country_code || 'XX',
+        region: geolocation.region || 'Unknown',
+        region_code: geolocation.region_code || '',
+        city: geolocation.city || 'Unknown',
+        zip: geolocation.zip || '',
+        latitude: geolocation.latitude || 0,
+        longitude: geolocation.longitude || 0,
+        timezone: geolocation.timezone || '',
+        isp: geolocation.isp || '',
+        org: geolocation.org || ''
+      },
+      user_agent: userAgentString || 'Unknown',
       
       // Browser info
       browser_info: {
