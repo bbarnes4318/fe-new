@@ -1,10 +1,10 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const path = require('path');
+const sequelize = require('./config/database');
 require('dotenv').config();
 
 const app = express();
@@ -41,18 +41,24 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname)));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+// Database Connection and Sync
+sequelize.sync({ alter: true }) // alter: true updates tables if models change
+  .then(() => {
+    console.log('✅ PostgreSQL database synced');
+  })
+  .catch((err) => {
+    console.error('❌ Failed to sync database:', err);
+  });
 
-const submissionRoutes = require('./routes/submissions');
-const analyticsRoutes = require('./routes/analytics');
-const authRoutes = require('./routes/auth');
+// Routes
+// Note: These routes need to be updated to use Sequelize if they haven't been already
+// const submissionRoutes = require('./routes/submissions');
+// const analyticsRoutes = require('./routes/analytics');
+// const authRoutes = require('./routes/auth');
 
-app.use('/api/submissions', submissionRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/auth', authRoutes);
+// app.use('/api/submissions', submissionRoutes);
+// app.use('/api/analytics', analyticsRoutes);
+// app.use('/api/auth', authRoutes);
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard', 'index.html'));

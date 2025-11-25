@@ -1,6 +1,6 @@
 const geoip = require('geoip-lite');
 const useragent = require('useragent');
-const Submission = require('../models/Submission');
+const { Submission } = require('../models');
 
 // Simplified form handler
 const formHandler = async (req, res) => {
@@ -68,19 +68,7 @@ const formHandler = async (req, res) => {
       
       // Technical data
       ip_address: cleanIP || '127.0.0.1',
-      geolocation: {
-        country: geolocation.country || 'Unknown',
-        country_code: geolocation.country_code || 'XX',
-        region: geolocation.region || 'Unknown',
-        region_code: geolocation.region_code || '',
-        city: geolocation.city || 'Unknown',
-        zip: geolocation.zip || '',
-        latitude: geolocation.latitude || 0,
-        longitude: geolocation.longitude || 0,
-        timezone: geolocation.timezone || '',
-        isp: geolocation.isp || '',
-        org: geolocation.org || ''
-      },
+      geolocation: geolocation,
       user_agent: userAgentString || 'Unknown',
       
       // Browser info
@@ -97,11 +85,13 @@ const formHandler = async (req, res) => {
         major: agent.os.major || 'Unknown'
       },
       
-      // Device info - flatten to match schema
-      'device_info.family': agent.device.family || 'Unknown',
-      'device_info.brand': agent.device.brand || 'Unknown',
-      'device_info.model': agent.device.model || 'Unknown',
-      'device_info.type': getDeviceType(userAgentString),
+      // Device info
+      device_info: {
+        family: agent.device.family || 'Unknown',
+        brand: agent.device.brand || 'Unknown',
+        model: agent.device.model || 'Unknown',
+        type: getDeviceType(userAgentString)
+      },
       
       // Trusted form and metadata
       trusted_form_cert_url: formData.xxTrustedFormCertUrl || formData.Trusted_Form_Alt || formData.trusted_form_cert_url || 'https://cert.trustedform.com/pending',
@@ -116,11 +106,10 @@ const formHandler = async (req, res) => {
     };
     
     // Save to database
-    const submission = new Submission(submissionData);
-    await submission.save();
+    const submission = await Submission.create(submissionData);
     
     console.log('✅ New submission saved:', {
-      id: submission._id,
+      id: submission.id,
       email: submission.email,
       location: `${submission.geolocation.city}, ${submission.geolocation.country}`,
       quality_score: submission.quality_score
@@ -130,7 +119,7 @@ const formHandler = async (req, res) => {
     res.json({
       status: 'SUCCESS',
       message: 'Submission received successfully',
-      submissionId: submission._id
+      submissionId: submission.id
     });
     
   } catch (error) {
@@ -140,7 +129,7 @@ const formHandler = async (req, res) => {
     if (req.body) {
       try {
         const basicData = Array.isArray(req.body) ? req.body[0] : req.body;
-        const basicSubmission = new Submission({
+        const basicSubmission = {
           fname: basicData.fname || 'Unknown',
           lname: basicData.lname || 'Unknown',
           email: basicData.email,
@@ -157,8 +146,8 @@ const formHandler = async (req, res) => {
             region: 'Unknown',
             zip: '00000'
           }
-        });
-        await basicSubmission.save();
+        };
+        await Submission.create(basicSubmission);
         console.log('✅ Basic submission saved despite errors');
       } catch (basicError) {
         console.error('Failed to save basic submission:', basicError);

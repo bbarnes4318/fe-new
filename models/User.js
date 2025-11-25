@@ -1,102 +1,100 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   username: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    trim: true,
-    minlength: 3,
-    maxlength: 50
+    validate: {
+      len: [3, 50]
+    }
   },
   email: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false,
     unique: true,
-    trim: true,
-    lowercase: true
+    validate: {
+      isEmail: true
+    }
   },
   password: {
-    type: String,
-    required: true,
-    minlength: 6
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [6, 100]
+    }
   },
   role: {
-    type: String,
-    enum: ['admin', 'manager', 'analyst'],
-    default: 'analyst'
+    type: DataTypes.ENUM('admin', 'manager', 'analyst'),
+    defaultValue: 'analyst'
   },
   isActive: {
-    type: Boolean,
-    default: true
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
   lastLogin: {
-    type: Date
+    type: DataTypes.DATE
   },
   permissions: {
-    viewSubmissions: { type: Boolean, default: true },
-    exportData: { type: Boolean, default: false },
-    manageUsers: { type: Boolean, default: false },
-    viewAnalytics: { type: Boolean, default: true }
+    type: DataTypes.JSONB,
+    defaultValue: {
+      viewSubmissions: true,
+      exportData: false,
+      manageUsers: false,
+      viewAnalytics: true
+    }
   }
 }, {
-  timestamps: true
-});
-
-// Index for faster queries
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
+  timestamps: true,
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+      
+      if (user.changed('role')) {
+        switch (user.role) {
+          case 'admin':
+            user.permissions = {
+              viewSubmissions: true,
+              exportData: true,
+              manageUsers: true,
+              viewAnalytics: true
+            };
+            break;
+          case 'manager':
+            user.permissions = {
+              viewSubmissions: true,
+              exportData: true,
+              manageUsers: false,
+              viewAnalytics: true
+            };
+            break;
+          case 'analyst':
+            user.permissions = {
+              viewSubmissions: true,
+              exportData: false,
+              manageUsers: false,
+              viewAnalytics: true
+            };
+            break;
+        }
+      }
+    }
   }
 });
 
-// Method to check password
-userSchema.methods.comparePassword = async function(password) {
+// Instance method to check password
+User.prototype.comparePassword = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Set permissions based on role
-userSchema.pre('save', function(next) {
-  if (this.isModified('role')) {
-    switch (this.role) {
-      case 'admin':
-        this.permissions = {
-          viewSubmissions: true,
-          exportData: true,
-          manageUsers: true,
-          viewAnalytics: true
-        };
-        break;
-      case 'manager':
-        this.permissions = {
-          viewSubmissions: true,
-          exportData: true,
-          manageUsers: false,
-          viewAnalytics: true
-        };
-        break;
-      case 'analyst':
-        this.permissions = {
-          viewSubmissions: true,
-          exportData: false,
-          manageUsers: false,
-          viewAnalytics: true
-        };
-        break;
-    }
-  }
-  next();
-});
-
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;
