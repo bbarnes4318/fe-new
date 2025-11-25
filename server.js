@@ -16,9 +16,15 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// UPDATED: Allow the new domain
+// UPDATED: Allow the new domain and DigitalOcean app
 app.use(cors({
-  origin: ['http://buyertrend.com', 'http://www.buyertrend.com', 'https://buyertrend.com', 'https://www.buyertrend.com']
+  origin: [
+    'http://buyertrend.com', 
+    'http://www.buyertrend.com', 
+    'https://buyertrend.com', 
+    'https://www.buyertrend.com',
+    'https://few-new-k8pil.ondigitalocean.app'
+  ]
 }));
 
 const limiter = rateLimit({

@@ -1,9 +1,8 @@
-const axios = require('axios');
 const geoip = require('geoip-lite');
 const useragent = require('useragent');
 const Submission = require('../models/Submission');
 
-// Enhanced form handler that captures additional data
+// Simplified form handler
 const formHandler = async (req, res) => {
   try {
     // Get client IP address
@@ -23,36 +22,22 @@ const formHandler = async (req, res) => {
     // Parse user agent for browser/device info
     const agent = useragent.parse(userAgentString);
     
-    // Get basic geolocation from IP (offline lookup)
+    // Get basic geolocation from IP (offline lookup only)
     let geoData = geoip.lookup(cleanIP) || {};
-    
-    // Enhanced geolocation using IPStack API
-    let enhancedGeoData = {};
-    if (process.env.IPSTACK_API_KEY && cleanIP !== '127.0.0.1') {
-      try {
-        const geoResponse = await axios.get(
-          `http://api.ipstack.com/${cleanIP}?access_key=${process.env.IPSTACK_API_KEY}`,
-          { timeout: 5000 }
-        );
-        enhancedGeoData = geoResponse.data;
-      } catch (geoError) {
-        console.warn('IPStack API error:', geoError.message);
-      }
-    }
     
     // Combine geolocation data
     const geolocation = {
-      country: enhancedGeoData.country_name || geoData.country || 'Unknown',
-      country_code: enhancedGeoData.country_code || geoData.country || 'XX',
-      region: enhancedGeoData.region_name || geoData.region || 'Unknown',
-      region_code: enhancedGeoData.region_code || '',
-      city: enhancedGeoData.city || geoData.city || 'Unknown',
-      zip: enhancedGeoData.zip || geoData.zip || '',
-      latitude: enhancedGeoData.latitude || geoData.ll?.[0] || 0,
-      longitude: enhancedGeoData.longitude || geoData.ll?.[1] || 0,
-      timezone: enhancedGeoData.time_zone?.id || geoData.timezone || '',
-      isp: enhancedGeoData.connection?.isp || '',
-      org: enhancedGeoData.connection?.organization || ''
+      country: geoData.country || 'Unknown',
+      country_code: geoData.country || 'XX',
+      region: geoData.region || 'Unknown',
+      region_code: geoData.region || '',
+      city: geoData.city || 'Unknown',
+      zip: geoData.zip || '',
+      latitude: geoData.ll?.[0] || 0,
+      longitude: geoData.ll?.[1] || 0,
+      timezone: geoData.timezone || '',
+      isp: '',
+      org: ''
     };
     
     // Device detection
@@ -69,25 +54,6 @@ const formHandler = async (req, res) => {
     
     // Parse form data from request
     const formData = Array.isArray(req.body) ? req.body[0] : req.body;
-    
-    // Parse dates
-    const parseDate = (dateStr) => {
-      if (!dateStr) return new Date();
-      try {
-        // Handle MM/DD/YYYY format
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const date = new Date(parts[2], parts[0] - 1, parts[1]);
-          if (!isNaN(date.getTime())) return date;
-        }
-        // Try parsing as regular date
-        const date = new Date(dateStr);
-        if (!isNaN(date.getTime())) return date;
-        return new Date(); // fallback
-      } catch (error) {
-        return new Date(); // fallback
-      }
-    };
     
     // Create submission object
     const submissionData = {
@@ -148,31 +114,11 @@ const formHandler = async (req, res) => {
       quality_score: submission.quality_score
     });
     
-    // Forward to original API endpoint (if needed)
-    let originalResponse = { status: 'SUCCESS' };
-    
-    // If there's an original external API, forward the request
-    if (process.env.ORIGINAL_API_URL) {
-      try {
-        const forwardResponse = await axios.post(process.env.ORIGINAL_API_URL, req.body, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': req.headers.authorization
-          },
-          timeout: 10000
-        });
-        originalResponse = forwardResponse.data;
-      } catch (forwardError) {
-        console.warn('Original API forward error:', forwardError.message);
-      }
-    }
-    
     // Return success response
     res.json({
       status: 'SUCCESS',
       message: 'Submission received successfully',
-      submissionId: submission._id,
-      ...originalResponse
+      submissionId: submission._id
     });
     
   } catch (error) {
