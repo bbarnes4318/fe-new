@@ -1,7 +1,5 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-
-// Use the connection string from environment variables
 // Note: In production, this MUST come from process.env.DATABASE_URL
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -10,11 +8,11 @@ console.log('URL Configured:', databaseUrl ? 'Yes (Hidden)' : 'No');
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
-  logging: console.log, // Enable logging to see what's happening
+  logging: console.log,
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // Required for DigitalOcean managed databases with self-signed certs
+      rejectUnauthorized: false
     }
   },
   pool: {
