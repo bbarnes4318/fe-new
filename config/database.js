@@ -4,8 +4,15 @@ require('dotenv').config();
 // Note: In production, this MUST come from process.env.DATABASE_URL
 let databaseUrl = process.env.DATABASE_URL;
 
+// Fallback for local development if DATABASE_URL is not set
+if (!databaseUrl) {
+  console.warn('⚠️ DATABASE_URL not found, using default local connection string.');
+  databaseUrl = 'postgres://postgres:postgres@localhost:5432/rideshare_analytics';
+}
+
 console.log('🔌 Attempting Database Connection...');
 console.log('URL Configured:', databaseUrl ? 'Yes (Hidden)' : 'No');
+
 let dialectOptions = {
   ssl: {
     require: true,
@@ -13,7 +20,13 @@ let dialectOptions = {
   }
 };
 
-if (databaseUrl) {
+// Disable SSL for local development (localhost)
+if (databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1')) {
+  dialectOptions = {}; // No SSL for local
+  console.log('🔒 SSL disabled for local connection');
+}
+
+if (process.env.DATABASE_URL) {
   // Parse the URL to remove any existing SSL parameters that might conflict
   try {
     const url = new URL(databaseUrl);

@@ -7,19 +7,6 @@ class RideshareDashboard {
         this.charts = {};
         this.map = null;
         this.dashboardData = null;
-        
-        this.init();
-    }
-    
-    init() {
-        // Check authentication
-        if (!this.token) {
-            return; // Don't redirect, just don't initialize
-        }
-        
-        // Set user info
-        this.setUserInfo();
-        
         // Initialize event listeners
         this.initEventListeners();
         
