@@ -14,7 +14,7 @@ const sequelize = new Sequelize(databaseUrl, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // Required for DigitalOcean managed databases
+      rejectUnauthorized: false // Required for DigitalOcean managed databases with self-signed certs
     }
   },
   pool: {
