@@ -496,15 +496,16 @@
                 "✓ Application Received. A licensed agent will call you shortly.";
               form.reset();
             } else {
-              throw new Error(data.message || "Submission failed");
+              console.error("Server returned error:", data);
+              throw new Error(data.message + (data.error ? ` (${data.error})` : "") || "Submission failed");
             }
           })
           .catch((error) => {
-            console.error("Error:", error);
+            console.error("Submission Error:", error);
             message.className =
               "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg border border-red-100";
             message.innerHTML =
-              "⚠️ Connection Error. Please check your internet and try again.";
+              `⚠️ Error: ${error.message}`;
           })
           .finally(() => {
             button.disabled = false;
