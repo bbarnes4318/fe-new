@@ -80,27 +80,6 @@
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-            Secure & Confidential
-          </div>
-          <a
-            href="#quote-form-section"
-            class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors"
-          >
-            Get A Quote
-          </a>
-        </div>
-      </div>
-    </header>
-
-    <main class="relative">
       <div
         class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-50 to-transparent -z-10"
       ></div>
@@ -437,84 +416,90 @@
       const ageSelect = document.getElementById("age");
       for (let i = 40; i <= 80; i++) {
         const option = document.createElement("option");
+    <script>
+      // Populate Age Dropdown
+      const ageSelect = document.getElementById("age");
+      for (let i = 40; i <= 80; i++) {
+        const option = document.createElement("option");
         option.value = i;
         option.textContent = i;
         ageSelect.appendChild(option);
       }
 
-      let isSubmitting = false;
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById("quote-form");
+        const button = document.getElementById("submit-button");
+        const message = document.getElementById("response-message");
+        let isSubmitting = false;
 
-      function handleSubmit(event) {
-        event.preventDefault();
-
-        if (isSubmitting) {
-          return false;
+        // Helper to show message
+        function showMessage(text, type) {
+            message.className = type === 'success' 
+                ? "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 p-3 rounded-lg border border-green-100"
+                : "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg border border-red-100";
+            message.innerHTML = text;
+            message.classList.remove('hidden');
         }
 
-        isSubmitting = true;
-        const button = document.getElementById("submit-button");
-        const buttonContent = button.innerHTML;
-        const message = document.getElementById("response-message");
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("Submit button clicked via Event Listener");
+            
+            if (isSubmitting) return;
+            isSubmitting = true;
 
-        // Loading state
-        button.disabled = true;
-        button.innerHTML =
-          '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+            // Visual feedback immediately
+            const originalContent = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
 
-        const form = document.getElementById("quote-form");
-        const formData = new FormData(form);
+            const formData = new FormData(form);
+            const payload = {
+                fname: formData.get("fname"),
+                lname: formData.get("lname"),
+                phone: formData.get("phone"),
+                state: formData.get("state"),
+                age: formData.get("age"),
+                beneficiary: formData.get("beneficiary"),
+                xxTrustedFormCertUrl: document.getElementById("xxTrustedFormCertUrl") ? document.getElementById("xxTrustedFormCertUrl").value : "",
+                case_type: "Final Expense",
+                ownerid: "005TR00000CDuezYAD",
+            };
 
-        const payload = {
-          fname: formData.get("fname"),
-          lname: formData.get("lname"),
-          phone: formData.get("phone"),
-          state: formData.get("state"),
-          age: formData.get("age"),
-          beneficiary: formData.get("beneficiary"),
-          xxTrustedFormCertUrl: document.getElementById("xxTrustedFormCertUrl")
-            .value,
-          case_type: "Final Expense",
-          ownerid: "005TR00000CDuezYAD",
-        };
+            console.log("Sending payload:", payload);
 
-        fetch("/api-proxy/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization:
-              "Basic " +
-              btoa("Over.The.World.Sales:STD8 7CNS URtl fHof uH3f 3VZJ"),
-          },
-          body: JSON.stringify([payload]),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.status === "SUCCESS") {
-              message.className =
-                "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 p-3 rounded-lg border border-green-100";
-              message.innerHTML =
-                "✓ Application Received. A licensed agent will call you shortly.";
-              form.reset();
-            } else {
-              console.error("Server returned error:", data);
-              throw new Error(data.message + (data.error ? ` (${data.error})` : "") || "Submission failed");
-            }
-          })
-          .catch((error) => {
-            console.error("Submission Error:", error);
-            message.className =
-              "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg border border-red-100";
-            message.innerHTML =
-              `⚠️ Error: ${error.message}`;
-          })
-          .finally(() => {
-            button.disabled = false;
-            button.innerHTML = buttonContent;
-            isSubmitting = false;
-          });
-
-        return false;
-      }
+            fetch("/api-proxy/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Basic " + btoa("Over.The.World.Sales:STD8 7CNS URtl fHof uH3f 3VZJ"),
+                },
+                body: JSON.stringify([payload]),
+            })
+            .then(response => {
+                console.log("Response status:", response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Response data:", data);
+                if (data.status === "SUCCESS") {
+                    showMessage("✓ Application Received. A licensed agent will call you shortly.", 'success');
+                    form.reset();
+                } else {
+                    throw new Error(data.message || "Submission failed");
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                showMessage("⚠️ Error: " + error.message, 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+                isSubmitting = false;
+            });
+        });
+      });
     </script>
   </body>
 </html>

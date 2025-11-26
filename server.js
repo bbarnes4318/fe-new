@@ -60,6 +60,10 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/auth', authRoutes);
 
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard', 'login.html'));
+});
+
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard', 'index.html'));
 });

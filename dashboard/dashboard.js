@@ -652,23 +652,6 @@ class RideshareDashboard {
     }
     
     logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/admin?logout=true';
-    }
-    
-    async apiCall(endpoint, options = {}) {
-        const response = await fetch(endpoint, {
-            headers: {
-                'Authorization': `Bearer ${this.token}`,
-                'Content-Type': 'application/json',
-                ...options.headers
-    showLoading() {
-        const loading = document.getElementById('loadingOverlay');
-        if (loading) loading.classList.remove('hidden');
-    }
-    
-    hideLoading() {
         const loading = document.getElementById('loadingOverlay');
         if (loading) loading.classList.add('hidden');
     }

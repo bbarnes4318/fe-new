@@ -163,6 +163,13 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <script>
+        // Check for authentication token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+        }
+    </script>
     <!-- Sidebar -->
     <div class="flex h-screen">
         <div class="sidebar w-64 text-white flex flex-col">
