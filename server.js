@@ -52,13 +52,13 @@ sequelize.sync({ alter: true }) // alter: true updates tables if models change
 
 // Routes
 // Note: These routes need to be updated to use Sequelize if they haven't been already
-// const submissionRoutes = require('./routes/submissions');
-// const analyticsRoutes = require('./routes/analytics');
-// const authRoutes = require('./routes/auth');
+const submissionRoutes = require('./routes/submissions');
+const analyticsRoutes = require('./routes/analytics');
+const authRoutes = require('./routes/auth');
 
-// app.use('/api/submissions', submissionRoutes);
-// app.use('/api/analytics', analyticsRoutes);
-// app.use('/api/auth', authRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard', 'index.html'));

@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 const User = require('../models/User');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
@@ -18,10 +19,12 @@ router.post('/login', async (req, res) => {
     
     // Find user by username or email
     const user = await User.findOne({
-      $or: [
-        { username: username },
-        { email: username }
-      ]
+      where: {
+        [Op.or]: [
+          { username: username },
+          { email: username }
+        ]
+      }
     });
     
     if (!user || !user.isActive) {
@@ -41,7 +44,7 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { 
-        userId: user._id, 
+        userId: user.id, // Sequelize uses 'id', not '_id'
         username: user.username,
         role: user.role 
       },
@@ -53,7 +56,7 @@ router.post('/login', async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -73,7 +76,7 @@ router.get('/verify', authenticateToken, (req, res) => {
   res.json({
     valid: true,
     user: {
-      id: req.user._id,
+      id: req.user.id,
       username: req.user.username,
       email: req.user.email,
       role: req.user.role,
@@ -96,7 +99,9 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
     
     // Check if user already exists
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }]
+      where: {
+        [Op.or]: [{ username }, { email }]
+      }
     });
     
     if (existingUser) {
@@ -106,19 +111,18 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
     }
     
     // Create new user
-    const user = new User({
+    // Note: Sequelize 'create' triggers hooks, so password hashing in beforeSave should work.
+    const user = await User.create({
       username,
       email,
       password,
       role: role || 'analyst'
     });
     
-    await user.save();
-    
     res.status(201).json({
       message: 'User created successfully',
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -135,7 +139,9 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
 // Get all users endpoint (admin only)
 router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
+    const users = await User.findAll({
+      attributes: { exclude: ['password'] }
+    });
     res.json(users);
   } catch (error) {
     console.error('Get users error:', error);
@@ -149,7 +155,7 @@ router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { username, email, role, isActive } = req.body;
     
-    const user = await User.findById(id);
+    const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -165,7 +171,7 @@ router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
     res.json({
       message: 'User updated successfully',
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -191,7 +197,7 @@ router.put('/change-password', authenticateToken, async (req, res) => {
       });
     }
     
-    const user = await User.findById(req.user._id);
+    const user = await User.findByPk(req.user.id);
     
     // Verify current password
     const isValidPassword = await user.comparePassword(currentPassword);
