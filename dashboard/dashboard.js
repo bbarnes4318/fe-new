@@ -663,22 +663,6 @@ class RideshareDashboard {
                 'Authorization': `Bearer ${this.token}`,
                 'Content-Type': 'application/json',
                 ...options.headers
-            },
-            ...options
-        });
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                return;
-            }
-            throw new Error(`API call failed: ${response.statusText}`);
-        }
-        
-        return await response.json();
-    }
-    
     showLoading() {
         const loading = document.getElementById('loadingOverlay');
         if (loading) loading.classList.remove('hidden');
